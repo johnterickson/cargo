@@ -2,6 +2,7 @@
 name: cargo
 
 jobs:
+  # works
   # - job: windows
   #   strategy:
   #     matrix:
@@ -30,6 +31,25 @@ jobs:
   #           # so we just run `cargo check --tests` like
   #         if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +1.31.0 check --tests --features=deny-warnings
   #         if NOT defined MINIMAL_VERSIONS cargo test --features=deny-warnings
+  
+  # TO TEST
+  # - job: linux_min_ver
+  #   pool:
+  #     vmImage: ubuntu-16.04
+  #   variables:
+  #     TARGET:  x86_64-unknown-linux-gnu
+  #     ALT: i686-unknown-linux-gnu
+  #     RUST_VERSION: 1.31.0
+  #   steps:
+  #     - script: |
+  #         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+  #         export PATH=$PATH:~/.cargo/bin
+  #         rustup toolchain install $RUST_VERSION
+  #         rustup target add $ALT
+  #         rustup toolchain install nightly
+  #         cargo +nightly generate-lockfile -Z minimal-versions
+  #         cargo -V
+  #         cargo test --features=deny-warnings
 
   - job: linux
     pool:
@@ -46,25 +66,38 @@ jobs:
           ALT: i686-unknown-linux-gnu
           CHANNEL: beta
           # if: branch != master OR type = pull_request
+        x86_x64_i686_nightly:
+          TARGET:  x86_64-unknown-linux-gnu
+          ALT: i686-unknown-linux-gnu
+          CHANNEL: nightly
+          # if: branch != master OR type = pull_request
     steps:
       - script: |
-          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $CHANNEL
+          sudo apt install gcc-multilib -y #needed?
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $CHANNEL --default-host $TARGET
           export PATH=$PATH:~/.cargo/bin
           rustup target add $ALT
           cargo test --features=deny-warnings
-
+        displayName: test 
+      - script: |
+          curl -Lf https://github.com/rust-lang-nursery/mdBook/releases/download/v0.1.7/mdbook-v0.1.7-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=$HOME/.cargo/bin
+          cargo doc --no-deps
+          cd src/doc && mdbook build --dest-dir ../../target/doc
+        displayName: docs
+        condition:  eq(variables['CHANNEL'], 'nightly')
   - job: mac
     strategy:
       matrix:
         osx:
           TARGET: x86_64-apple-darwin
           ALT: i686-apple-darwin
+          CHANNEL: stable
           # if: branch != master OR type = pull_request
     pool:
       vmImage: macos-10.13
     steps:
       - script: |
-          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $CHANNEL
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $CHANNEL --default-host $TARGET
           export PATH=$PATH:~/.cargo/bin
           rustup target add $ALT
           cargo test --features=deny-warnings
