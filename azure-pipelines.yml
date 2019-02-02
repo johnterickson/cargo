@@ -73,13 +73,14 @@ jobs:
           # if: branch != master OR type = pull_request
     steps:
       - script: |
-          sudo apt install gcc-multilib -y #needed?
+          sudo apt install gcc-multilib -y
           curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $CHANNEL --default-host $TARGET
           export PATH=$PATH:~/.cargo/bin
           rustup target add $ALT
           cargo test --features=deny-warnings
         displayName: test 
       - script: |
+          export PATH=$PATH:~/.cargo/bin
           curl -Lf https://github.com/rust-lang-nursery/mdBook/releases/download/v0.1.7/mdbook-v0.1.7-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=$HOME/.cargo/bin
           cargo doc --no-deps
           cd src/doc && mdbook build --dest-dir ../../target/doc

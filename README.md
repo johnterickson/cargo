@@ -5,6 +5,7 @@ Cargo downloads your Rust project’s dependencies and compiles your project.
 Learn more at https://doc.rust-lang.org/cargo/
 
 ## Code Status
+[![Build Status](https://dev.azure.com/johnterickson/rust-lang/_apis/build/status/rust-lang-CI?branchName=master)](https://dev.azure.com/johnterickson/rust-lang/_build/latest?definitionId=12?branchName=master)
 
 [![Build Status](https://travis-ci.com/rust-lang/cargo.svg?branch=master)](https://travis-ci.com/rust-lang/cargo)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/rust-lang/cargo?branch=master&svg=true)](https://ci.appveyor.com/project/rust-lang-libs/cargo)
