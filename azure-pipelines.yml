@@ -1,7 +1,15 @@
 # Recommened editor for this file: https://github.com/Microsoft/azure-pipelines-vscode
+name: cargo
 
 jobs:
-  - job: x86_64_pc_windows_msvc
+  - job: windows
+    strategy:
+      matrix:
+        cross_compile:
+          OTHER_TARGET: 'i686-pc-windows-msvc'
+        x86_x64:
+          MINIMAL_VERSIONS: true
+          CFG_DISABLE_CROSS_TESTS: 1
     pool:
       vmImage: vs2017-win2016
     steps:
@@ -11,36 +19,14 @@ jobs:
       - powershell: Invoke-WebRequest -Uri https://win.rustup.rs/ -OutFile rustup-init.exe
       - script: |
           rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain nightly
-          set PATH=%PATH%;(%USERPROFILE%\.cargo\bin
-          if defined MINIMAL_VERSIONS rustup toolchain install 1.31.0
-          if defined OTHER_TARGET rustup target add %OTHER_TARGET%
-          rustc -V
-          cargo -V
-          git submodule update --init
-          # we don't have ci time to run the full `cargo test` with `minimal-versions` like
-          # - if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +stable test
-          # so we just run `cargo check --tests` like
-          if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +1.31.0 check --tests --features=deny-warnings
-          if NOT defined MINIMAL_VERSIONS cargo test --features=deny-warnings
-
-  - job: i686_pc_windows_msvc
-    pool:
-      vmImage: vs2017-win2016
-    steps:
-        # - if NOT defined APPVEYOR_PULL_REQUEST_NUMBER if "%APPVEYOR_REPO_BRANCH%" == "master" appveyor exit 
-        # TODO
-        # appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
-      - powershell: Invoke-WebRequest -Uri https://win.rustup.rs/ -OutFile rustup-init.exe
-      - script: |
-          rustup-init.exe -y --default-host i686-pc-windows-msvc --default-toolchain nightly
           set PATH=%PATH%;%USERPROFILE%\.cargo\bin
           if defined MINIMAL_VERSIONS rustup toolchain install 1.31.0
           if defined OTHER_TARGET rustup target add %OTHER_TARGET%
           rustc -V
           cargo -V
           git submodule update --init
-          # we don't have ci time to run the full `cargo test` with `minimal-versions` like
-          # - if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +stable test
-          # so we just run `cargo check --tests` like
+            # we don't have ci time to run the full `cargo test` with `minimal-versions` like
+            # - if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +stable test
+            # so we just run `cargo check --tests` like
           if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +1.31.0 check --tests --features=deny-warnings
           if NOT defined MINIMAL_VERSIONS cargo test --features=deny-warnings
