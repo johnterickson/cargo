@@ -15,7 +15,7 @@ jobs:
     steps:
         # - if NOT defined APPVEYOR_PULL_REQUEST_NUMBER if "%APPVEYOR_REPO_BRANCH%" == "master" appveyor exit 
         # TODO
-        # appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+   
       - powershell: Invoke-WebRequest -Uri https://win.rustup.rs/ -OutFile rustup-init.exe
       - script: |
           rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain nightly
@@ -25,9 +25,12 @@ jobs:
           rustc -V
           cargo -V
           git submodule update --init
-            # we don't have ci time to run the full `cargo test` with `minimal-versions` like
-            # - if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +stable test
-            # so we just run `cargo check --tests` like
+          echo "##vso[task.setvariable variable=PATH;]%PATH%"
+          
+      # we don't have ci time to run the full `cargo test` with `minimal-versions` like
+      # - if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +stable test
+      # so we just run `cargo check --tests` like
+      - script: |
           if defined MINIMAL_VERSIONS cargo +nightly generate-lockfile -Z minimal-versions && cargo +1.31.0 check --tests --features=deny-warnings
           if NOT defined MINIMAL_VERSIONS cargo test --features=deny-warnings
   
